@@ -63,29 +63,31 @@
 
 ### 설치 방법
 
-1. **저장소 클론**
+### **로컬 개발**
+
+#### 1. **저장소 클론**
 ```bash
-git clone https://github.com/yourusername/ephemeral-life-resonance.git
-cd ephemeral-life-resonance
+git clone https://github.com/KhankhanLee/Ephemeral_Life_Resonance.git
+cd Ephemeral_Life_Resonance
 ```
 
-2. **의존성 설치**
+#### 2. **의존성 설치**
 ```bash
 pip install -r requirements.txt
 ```
 
-3. **환경 변수 설정**
+#### 3. **환경 변수 설정**
 ```bash
 export GOOGLE_API_KEY="your_actual_api_key_here"
 ```
 
-4. **AI 서버 실행**
+#### 4. **AI 서버 실행**
 ```bash
 cd game
 python server.py
 ```
 
-5. **게임 실행**
+#### 5. **게임 실행**
 - **오디오 파일 추가** (저작권 문제로 포함되지 않음) 
 ```bash
 # 오디오 파일을 game/audio/ 폴더에 추가하세요
@@ -98,6 +100,25 @@ python server.py
 
 - Ren'Py Launcher에서 `game` 폴더 열기
 - "찰나의 그 아이" 실행
+
+### **Railway 배포**
+
+#### 1. **Railway 프로젝트 생성**
+- [Railway](https://railway.app)에 로그인
+- "New Project" → "Deploy from GitHub repo"
+- `Ephemeral_Life_Resonance` 저장소 선택
+
+#### 2. **환경변수 설정**
+Railway 대시보드에서 다음 환경변수 설정:
+```
+GOOGLE_API_KEY=your_google_api_key_here
+HOST=0.0.0.0
+PORT=8000
+```
+
+#### 3. **배포 완료**
+- Railway가 자동으로 배포
+- 배포된 URL을 Ren'Py 게임에서 사용
 
 ## 🛠️ 기술 스택
 

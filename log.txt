@@ -1,21 +1,21 @@
-2025-09-14 06:43:00 UTC
+2025-09-14 09:41:59 UTC
 macOS-10.16-x86_64-i386-64bit
 Ren'Py 8.4.1.25072401
 
-Early init took 70 ms
-Loading error handling took 36 ms
-Loading script took 375 ms
-Loading save slot metadata took 30 ms
+Early init took 74 ms
+Loading error handling took 38 ms
+Loading script took 418 ms
+Loading save slot metadata took 40 ms
 Loading persistent took 0 ms
-Running init code took 62 ms
-Loading analysis data took 4 ms
-Analyze and compile ATL took 2 ms
-Reloading save slot metadata took 13 ms
+Running init code took 61 ms
+Loading analysis data took 5 ms
+Analyze and compile ATL took 3 ms
+Reloading save slot metadata took 19 ms
 Backing up script files to '/Users/nankhan/Library/RenPy/backups/Ephemeral_Life_Resonance':
-Dump and make backups took 42 ms
+Dump and make backups took 49 ms
 Cleaning cache took 0 ms
 Making clean stores took 0 ms
-Initial gc took 34 ms
+Initial gc took 33 ms
 DPI scale factor: 1.000000
 Creating interface object took 1 ms
 Init translation took 0 ms
@@ -23,10 +23,10 @@ Cleaning stores took 0 ms
 Load screen analysis took 1 ms
 Analyze screens took 12 ms
 Save screen analysis took 13 ms
-Save pyanalysis took 0 ms
-Save bytecode took 27 ms
+Save pyanalysis took 5 ms
+Save bytecode took 26 ms
 Running _start took 1 ms
-Interface start took 584 ms
+Interface start took 587 ms
 
 Initializing gl2 renderer:
 primary display bounds: (0, 0, 1680, 1050)
@@ -40,54 +40,11 @@ Screen sizes: virtual=(1920, 1080) physical=(1328, 747) drawable=(2656, 1494)
 Maximum texture size: 4096x4096
 🎵 음악 재생: audio/title_theme.ogg
 🎵 음악 전환: audio/sub_theme.ogg
+🎵 공간 변경: cafe - peaceful 음악 재생
 음악 정지
 조용한 공간: campus - 음악 정지
 🎵 음악 전환: audio/study_theme.ogg
 🎵 감정 음악: study -> audio/study_theme.ogg
-🎵 공간 변경: cafe - study 음악 재생
-🎵 음악 재생: audio/energetic_theme.ogg
-🎵 공간 변경: cafe - study 음악 재생
-
-Full traceback:
-  File "game/script.rpy", line 66, in script call
-    call morning_slot
-  File "game/script.rpy", line 203, in script call
-    call ai_turn(selected_character, "morning_contact", side="left", conversation_type=conversation_type)
-  File "game/script.rpy", line 909, in script call
-    call ai_conversation_loop(npc, scene_id, side, conversation_count, conversation_ended, conversation_type)
-  File "game/script.rpy", line 931, in script call
-    call ai_single_turn(npc, scene_id, side, conversation_type)
-  File "game/script.rpy", line 969, in script
-    show expression image_expr as ai_face at pos_left_small
-  File "renpy/ast.py", line 1357, in execute
-    show_imspec(self.imspec, atl=getattr(self, "atl", None))
-    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/ast.py", line 726, in show_imspec
-    at_list = [renpy.python.py_eval(i) for i in at_list]
-               ~~~~~~~~~~~~~~~~~~~~^^^                  
-  File "renpy/python.py", line 1292, in py_eval
-    return py_eval_bytecode(code, globals, locals)
-           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/python.py", line 1285, in py_eval_bytecode
-    return eval(bytecode, globals, locals)
-           ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "game/script.rpy", line 969, in <module>
-    show expression image_expr as ai_face at pos_left_small
-                                             ^^^^^^^^^^^^^^
-NameError: name 'pos_left_small' is not defined
-
-While running game code:
-  File "game/script.rpy", line 66, in script call
-    call morning_slot
-  File "game/script.rpy", line 203, in script call
-    call ai_turn(selected_character, "morning_contact", side="left", conversation_type=conversation_type)
-  File "game/script.rpy", line 909, in script call
-    call ai_conversation_loop(npc, scene_id, side, conversation_count, conversation_ended, conversation_type)
-  File "game/script.rpy", line 931, in script call
-    call ai_single_turn(npc, scene_id, side, conversation_type)
-  File "game/script.rpy", line 969, in script
-    show expression image_expr as ai_face at pos_left_small
-  File "game/script.rpy", line 969, in <module>
-    show expression image_expr as ai_face at pos_left_small
-                                             ^^^^^^^^^^^^^^
-NameError: name 'pos_left_small' is not defined
+🎵 공간 변경: karaoke - study 음악 재생
+음악 정지
+조용한 공간: campus - 음악 정지

@@ -608,6 +608,7 @@ label night_contact_roll:
         jin "노래방 ㄱㄱ"
         scene bg karaoke
         $ update_location_music("karaoke")  # 노래방은 음악 재생
+        $ play_music(music_energetic, fade_time= 1.0)
         n "둘은 신나게 노래방에서 노래를 불렀다. 어딘가 마음은 쓰렸지만 말이다."
         hide jin_neutral
         # 노래방에서 나온 후 음악 정지
