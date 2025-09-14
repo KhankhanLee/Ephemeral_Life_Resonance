@@ -292,9 +292,6 @@ class CharacterNode:
         """AI 응답에서 JSON을 안전하게 파싱"""
         import re
         
-        # 텍스트 정리
-        text = text.strip()
-        
         # 캐릭터별 기본 응답 정의 (함수 시작 부분에서)
         character_responses = {
             "jisu": "어? 잠깐만... 뭔가 생각이 안 나넹! 다시 말해줭 ㅠㅠ",
@@ -306,6 +303,13 @@ class CharacterNode:
             "sis": "음... 잠시만. 머리가 좀 복잡해졌어.",
         }
         default_say = character_responses.get(self.character, "죄송해요, 잠시 생각이 안 나네요. 다시 말해주세요.")
+        
+        # text가 None이거나 빈 문자열인 경우 처리
+        if not text or not isinstance(text, str):
+            text = ""
+        
+        # 텍스트 정리
+        text = text.strip()
         
         # 빈 응답 처리
         if not text or len(text) < 10:
@@ -325,6 +329,10 @@ class CharacterNode:
     def detect_and_save_promises(self, text: str, state: Dict[str, Any]):
         """AI 대화에서 약속을 감지하고 저장"""
         import re
+        
+        # text가 None이거나 빈 문자열인 경우 처리
+        if not text or not isinstance(text, str):
+            return
         
         # 약속 관련 키워드 패턴
         promise_patterns = [
@@ -354,78 +362,6 @@ class CharacterNode:
                     # 약속 저장 (실제로는 Ren'Py에서 처리)
                     print(f"약속 감지: {self.character} - {promise_content} ({delay_days}일 후)")
                     # 여기서는 로그만 출력하고, 실제 저장은 Ren'Py에서 처리
-        
-        # JSON 수정: +숫자 -> 숫자로 변경 (간단하고 확실한 방법)
-        text = re.sub(r'\+(\d+)', r'\1', text)
-        
-        # 1. JSON 블록 찾기 (```json ... ``` 또는 { ... })
-        json_patterns = [
-            r'```json\s*(\{.*?\})\s*```',  # ```json { ... } ```
-            r'```\s*(\{.*?\})\s*```',     # ``` { ... } ```
-        ]
-        
-        for pattern in json_patterns:
-            matches = re.findall(pattern, text, re.DOTALL)
-            for match in matches:
-                try:
-                    cleaned = match.strip()
-                    # JSON 수정: +숫자 -> 숫자로 변경 (간단하고 확실한 방법)
-                    cleaned = re.sub(r'\+(\d+)', r'\1', cleaned)
-                    return json.loads(cleaned)
-                except json.JSONDecodeError as e:
-                    print(f"패턴 매칭 JSON 파싱 실패: {e}")
-                    continue
-        
-        # 2. 첫 번째 { 부터 마지막 } 까지 추출
-        start = text.find('{')
-        if start != -1:
-            # 중괄호 균형 맞추기
-            brace_count = 0
-            end = start
-            for i, char in enumerate(text[start:], start):
-                if char == '{':
-                    brace_count += 1
-                elif char == '}':
-                    brace_count -= 1
-                    if brace_count == 0:
-                        end = i + 1
-                        break
-            
-            if brace_count == 0:
-                try:
-                    json_text = text[start:end]
-                    # JSON 수정: +숫자 -> 숫자로 변경 (간단하고 확실한 방법)
-                    json_text = re.sub(r'\+(\d+)', r'\1', json_text)
-                    return json.loads(json_text)
-                except json.JSONDecodeError as e:
-                    print(f"중괄호 균형 JSON 파싱 실패: {e}")
-                    print(f"시도한 JSON: {json_text[:100]}...")
-        
-        # 3. 마지막 시도: 라인별로 JSON 찾기
-        lines = text.split('\n')
-        for line in lines:
-            line = line.strip()
-            if line.startswith('{') and line.endswith('}'):
-                try:
-                    # JSON 수정: +숫자 -> 숫자로 변경 (간단하고 확실한 방법)
-                    line = re.sub(r'\+(\d+)', r'\1', line)
-                    return json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-        
-        # 4. 실패 시 기본값 반환
-        print(f"JSON 파싱 완전 실패. 원본 텍스트: {text[:200]}...")
-        print(f"전체 텍스트 길이: {len(text)}")
-        print(f"텍스트 내용: {repr(text)}")
-        return {
-            "say": default_say,
-            "sprite": "neutral",
-            "choices": [
-                {"text": "괜찮아, 천천히 생각해봐.", "effects": {"social": 1}, "next": None},
-                {"text": "다음에 다시 이야기하자.", "effects": {"resolve": 1}, "next": None}
-            ],
-            "conversation_end": True,
-        }
 
     def clamp_effects(self, effects: Dict[str, int]) -> Dict[str, int]:
         safe = {}
@@ -501,7 +437,8 @@ class CharacterNode:
                         ch["text"] = ch["text"].replace("{", "{{").replace("}", "}}")
             
             # 약속 감지 및 저장
-            self.detect_and_save_promises(data["say"], state)
+            if "say" in data and data["say"]:
+                self.detect_and_save_promises(data["say"], state)
             
             # AIResponse 생성
             try:
