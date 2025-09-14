@@ -1,0 +1,10 @@
+﻿I'm sorry, but errors were detected in your script. Please correct the
+errors listed below, and try again.
+
+
+File "game/script.rpy", line 1134: expected statement.
+    for promise in jin_promises:
+                ^
+
+Ren'Py Version: Ren'Py 8.4.1.25072401
+Sat Sep 13 22:08:14 2025

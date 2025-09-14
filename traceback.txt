@@ -1,0 +1,52 @@
+﻿I'm sorry, but an uncaught exception occurred.
+
+While running game code:
+  File "game/script.rpy", line 66, in script call
+    call morning_slot
+  File "game/script.rpy", line 203, in script call
+    call ai_turn(selected_character, "morning_contact", side="left", conversation_type=conversation_type)
+  File "game/script.rpy", line 909, in script call
+    call ai_conversation_loop(npc, scene_id, side, conversation_count, conversation_ended, conversation_type)
+  File "game/script.rpy", line 931, in script call
+    call ai_single_turn(npc, scene_id, side, conversation_type)
+  File "game/script.rpy", line 969, in script
+    show expression image_expr as ai_face at pos_left_small
+  File "game/script.rpy", line 969, in <module>
+    show expression image_expr as ai_face at pos_left_small
+                                             ^^^^^^^^^^^^^^
+NameError: name 'pos_left_small' is not defined
+
+-- Full Traceback ------------------------------------------------------------
+
+Traceback (most recent call last):
+  File "game/script.rpy", line 66, in script call
+    call morning_slot
+  File "game/script.rpy", line 203, in script call
+    call ai_turn(selected_character, "morning_contact", side="left", conversation_type=conversation_type)
+  File "game/script.rpy", line 909, in script call
+    call ai_conversation_loop(npc, scene_id, side, conversation_count, conversation_ended, conversation_type)
+  File "game/script.rpy", line 931, in script call
+    call ai_single_turn(npc, scene_id, side, conversation_type)
+  File "game/script.rpy", line 969, in script
+    show expression image_expr as ai_face at pos_left_small
+  File "renpy/ast.py", line 1357, in execute
+    show_imspec(self.imspec, atl=getattr(self, "atl", None))
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/ast.py", line 726, in show_imspec
+    at_list = [renpy.python.py_eval(i) for i in at_list]
+               ~~~~~~~~~~~~~~~~~~~~^^^                  
+  File "renpy/python.py", line 1292, in py_eval
+    return py_eval_bytecode(code, globals, locals)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/python.py", line 1285, in py_eval_bytecode
+    return eval(bytecode, globals, locals)
+           ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "game/script.rpy", line 969, in <module>
+    show expression image_expr as ai_face at pos_left_small
+                                             ^^^^^^^^^^^^^^
+NameError: name 'pos_left_small' is not defined
+
+macOS-10.16-x86_64-i386-64bit x86_64
+Ren'Py 8.4.1.25072401
+찰나의 그 아이 (Ephemeral_Life_Resonance) 0.1.1 Beta
+Sun Sep 14 15:48:39 2025
