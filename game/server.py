@@ -299,6 +299,7 @@ class CharacterNode:
     def parse_ai_json(self, text: str) -> dict:
         """AI 응답에서 JSON을 안전하게 파싱"""
         import re
+        import json
         
         # 캐릭터별 기본 응답 정의 (함수 시작 부분에서)
         character_responses = {
@@ -333,6 +334,46 @@ class CharacterNode:
                 ],
                 "conversation_end": False,
             }
+        
+        # 1. 직접 JSON 파싱 시도
+        try:
+            data = json.loads(text)
+            if isinstance(data, dict) and "say" in data:
+                return data
+        except json.JSONDecodeError:
+            pass
+        
+        # 2. JSON 블록 추출 시도
+        json_patterns = [
+            r'```json\s*(\{.*?\})\s*```',
+            r'```\s*(\{.*?\})\s*```',
+            r'(\{[^{}]*"say"[^{}]*\})',
+            r'(\{.*?"say".*?\})',
+        ]
+        
+        for pattern in json_patterns:
+            matches = re.findall(pattern, text, re.DOTALL | re.IGNORECASE)
+            for match in matches:
+                try:
+                    data = json.loads(match)
+                    if isinstance(data, dict) and "say" in data:
+                        return data
+                except json.JSONDecodeError:
+                    continue
+        
+        # 3. 실패 시 기본값 반환
+        print(f"JSON 파싱 완전 실패. 원본 텍스트: {text[:200]}...")
+        print(f"전체 텍스트 길이: {len(text)}")
+        print(f"텍스트 내용: {repr(text)}")
+        return {
+            "say": default_say,
+            "sprite": "neutral",
+            "choices": [
+                {"text": "괜찮아, 천천히 생각해봐.", "effects": {"social": 1}, "next": None},
+                {"text": "다음에 다시 이야기하자.", "effects": {"resolve": 1}, "next": None}
+            ],
+            "conversation_end": True,
+        }
     
     def detect_and_save_promises(self, text: str, state: Dict[str, Any]):
         """AI 대화에서 약속을 감지하고 저장"""
@@ -436,13 +477,23 @@ class CharacterNode:
             # JSON 파싱 시도 (여러 방법으로)
             data = self.parse_ai_json(s)
             
+            # data가 None이거나 딕셔너리가 아닌 경우 처리
+            if not data or not isinstance(data, dict):
+                print(f"parse_ai_json이 유효하지 않은 데이터를 반환했습니다: {data}")
+                fallback = self.default_fallback()
+                state["response"] = AIResponse(**fallback)
+                return state
+            
             # 텍스트 안전 처리 (Ren'Py 텍스트 태그 충돌 방지)
-            if "say" in data:
+            if "say" in data and data["say"]:
                 data["say"] = data["say"].replace("{", "{{").replace("}", "}}")
             
             # effects 클램핑 및 선택지 텍스트 안전 처리
             if "choices" in data and isinstance(data["choices"], list):
                 for ch in data["choices"]:
+                    if not isinstance(ch, dict):  # 추가 안전 체크
+                        print(f"Warning: Malformed choice found in AI response: {ch}")
+                        continue
                     ch["effects"] = self.clamp_effects(ch.get("effects", {}))
                     ch.setdefault("next", None)
                     # 선택지 텍스트도 안전하게 처리
