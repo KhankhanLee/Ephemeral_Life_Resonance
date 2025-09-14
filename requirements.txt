@@ -1,10 +1,18 @@
-fastapi==0.104.1
-uvicorn==0.24.0
-pydantic==2.5.0
-langgraph==0.0.62
-langchain==0.2.0
-langchain-core==0.1.52
-langchain-google-genai==0.0.11
-google-generativeai>=0.4.1
-python-dotenv==1.0.0
-requests==2.31.0
+fastapi==0.110.2
+uvicorn[standard]==0.30.6
+
+pydantic==2.8.2
+annotated-types==0.7.0
+typing-extensions==4.12.2
+
+# LangChain 세대 맞춤
+langchain==0.3.27
+langsmith==0.3.45
+langgraph==0.6.7
+
+# Google GenAI 세트
+langchain-google-genai==2.0.1
+google-generativeai==0.8.3
+
+python-dotenv==1.0.1
+requests==2.32.3
