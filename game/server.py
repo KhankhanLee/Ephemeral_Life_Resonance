@@ -495,10 +495,10 @@ class CharacterNode:
             if "choices" in data and isinstance(data["choices"], list):
                 for ch in data["choices"]:
                     ch["effects"] = self.clamp_effects(ch.get("effects", {}))
-            ch.setdefault("next", None)
+                    ch.setdefault("next", None)
                     # 선택지 텍스트도 안전하게 처리
-            if "text" in ch:
-                ch["text"] = ch["text"].replace("{", "{{").replace("}", "}}")
+                    if "text" in ch:
+                        ch["text"] = ch["text"].replace("{", "{{").replace("}", "}}")
             
             # 약속 감지 및 저장
             self.detect_and_save_promises(data["say"], state)
