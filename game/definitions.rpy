@@ -561,5 +561,5 @@ init -100 python:
             return post_json(self.endpoint, payload, headers=headers)
 
     # 인스턴스 만들기 
-    ai = DialogueAI(endpoint="https://ren-py-chat-dialogue-ai-production.up.railway.app")  
+    ai = DialogueAI(endpoint="https://ren-py-chat-dialogue-ai-production.up.railway.app/ai")  
     ai_memory = []   # 최근 대화 로그 저장 (세이브/로드에 같이 저장됨)
