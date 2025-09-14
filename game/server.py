@@ -254,6 +254,10 @@ class CharacterNode:
 """
 
     def summarize_memory(self, memory: List[MemoryTurn], limit: int = 6) -> str:
+        # memory가 None이거나 리스트가 아닌 경우 처리
+        if not memory or not isinstance(memory, list):
+            return "(대화내역 없음)"
+            
         # 캐릭터별 대화 히스토리만 사용
         filtered = [t for t in memory if t.npc == self.character]
         mem = filtered[-limit:]
@@ -266,6 +270,10 @@ class CharacterNode:
         return "\n".join(lines) if lines else "(대화내역 없음)"
 
     def short_state(self, state: Dict[str, Any]) -> str:
+        # state가 None이거나 딕셔너리가 아닌 경우 처리
+        if not state or not isinstance(state, dict):
+            return "state=empty"
+            
         keys = ["day", "days_left", "stress", "resolve", "social", "study", "fitness", "money", 
                 "route_ex", "ex_affection", "jisu_affection", "hayeon_affection", "counselor_trust"]
         parts = []
@@ -390,17 +398,22 @@ class CharacterNode:
 
     async def process(self, state: ConversationState) -> ConversationState:
         try:
+            # state가 None이거나 딕셔너리가 아닌 경우 처리
+            if not state or not isinstance(state, dict):
+                fallback = self.default_fallback()
+                return {"response": AIResponse(**fallback), "error": "Invalid state"}
+            
             # 캐릭터별 메모리 필터링
-            full_memory = state["memory"]
+            full_memory = state.get("memory", [])
             char_memory = [t for t in full_memory if t.npc == self.character]
 
             # 시스템 프롬프트와 사용자 프롬프트 생성 (필터된 메모리 사용)
             system_prompt = self.build_system_prompt()
             conversation_type = state.get("conversation_type", "casual")
             user_prompt = self.build_user_prompt(
-                state["scene_id"], 
+                state.get("scene_id"), 
                 char_memory, 
-                state["state"],
+                state.get("state", {}),
                 conversation_type,
             )
             
