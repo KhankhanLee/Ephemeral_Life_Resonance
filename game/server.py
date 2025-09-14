@@ -295,32 +295,32 @@ class CharacterNode:
         # 텍스트 정리
         text = text.strip()
         
+        # 캐릭터별 기본 응답 정의 (함수 시작 부분에서)
+        character_responses = {
+            "jisu": "어? 잠깐만... 뭔가 생각이 안 나넹! 다시 말해줭 ㅠㅠ",
+            "hayeon": "음... 잠시만. 머리가 좀 복잡해졌어.",
+            "ex": "미안, 잠깐... 뭔가 말이 안 나오네.",
+            "jin": "어? 뭐였지... 잠깐만 생각해볼게.",
+            "coach": "잠시만요... 마음이 복잡해졌네요. 다시 말해주세요.",
+            "mom": "어? 잠깐... 뭔가 생각이 안 나네.",
+            "sis": "음... 잠시만. 머리가 좀 복잡해졌어.",
+        }
+        default_say = character_responses.get(self.character, "죄송해요, 잠시 생각이 안 나네요. 다시 말해주세요.")
+        
         # 빈 응답 처리
         if not text or len(text) < 10:
             print(f"JSON 파싱 완전 실패. 원본 텍스트: ...")
             print(f"전체 텍스트 길이: {len(text)}")
             print(f"텍스트 내용: {repr(text)}")
-            # 캐릭터별 기본 응답 반환
-            character_responses = {
-                "jisu": "어? 잠깐만... 뭔가 생각이 안 나넹! 다시 말해줭 ㅠㅠ",
-                "hayeon": "음... 잠시만. 머리가 좀 복잡해졌어.",
-                "ex": "미안, 잠깐... 뭔가 말이 안 나오네.",
-                "jin": "어? 뭐였지... 잠깐만 생각해볼게.",
-                "coach": "잠시만요... 마음이 복잡해졌네요. 다시 말해주세요.",
-                "mom": "어? 잠깐... 뭔가 생각이 안 나네.",
-                "sis": "음... 잠시만. 머리가 좀 복잡해졌어.",
+            return {
+                "say": default_say,
+                "sprite": "neutral",
+                "choices": [
+                    {"text": "괜찮아요", "effects": {"study": 0, "social": 0, "fitness": 0, "money": 0, "stress": 0, "resolve": 0}, "next": None},
+                    {"text": "다른 이야기 해요", "effects": {"study": 0, "social": 1, "fitness": 0, "money": 0, "stress": -1, "resolve": 0}, "next": None}
+                ],
+                "conversation_end": False,
             }
-            default_say = character_responses.get(self.character, "죄송해요, 잠시 생각이 안 나네요. 다시 말해주세요.")
-            
-        return {
-            "say": default_say,
-            "sprite": "neutral",
-            "choices": [
-                {"text": "괜찮아요", "effects": {"study": 0, "social": 0, "fitness": 0, "money": 0, "stress": 0, "resolve": 0}, "next": None},
-                {"text": "다른 이야기 해요", "effects": {"study": 0, "social": 1, "fitness": 0, "money": 0, "stress": -1, "resolve": 0}, "next": None}
-            ],
-            "conversation_end": False,
-        }
     
     def detect_and_save_promises(self, text: str, state: Dict[str, Any]):
         """AI 대화에서 약속을 감지하고 저장"""
@@ -418,7 +418,7 @@ class CharacterNode:
         print(f"전체 텍스트 길이: {len(text)}")
         print(f"텍스트 내용: {repr(text)}")
         return {
-            "say": "미안, 잠깐 생각이 안 나네...",
+            "say": default_say,
             "sprite": "neutral",
             "choices": [
                 {"text": "괜찮아, 천천히 생각해봐.", "effects": {"social": 1}, "next": None},
