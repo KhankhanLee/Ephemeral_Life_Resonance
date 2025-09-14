@@ -9,6 +9,7 @@ from langgraph.graph import StateGraph, END, START
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage
 import asyncio
+from fastapi.middleware.cors import CORSMiddleware
 
 # ========= Env & LLM Client =========
 load_dotenv()
@@ -22,6 +23,14 @@ if GOOGLE_API_KEY:
 # ========= App =========
 app = FastAPI(title="RenPy Dialogue AI", version="0.2")
 
+#========= CORS =========
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # ========= Rate Limiting =========
 _BUCKET = {}
 CAPACITY = 20

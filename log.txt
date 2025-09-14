@@ -1,32 +1,32 @@
-2025-09-14 09:41:59 UTC
+2025-09-14 13:11:53 UTC
 macOS-10.16-x86_64-i386-64bit
 Ren'Py 8.4.1.25072401
 
-Early init took 74 ms
-Loading error handling took 38 ms
-Loading script took 418 ms
-Loading save slot metadata took 40 ms
+Early init took 72 ms
+Loading error handling took 35 ms
+Loading script took 245 ms
+Loading save slot metadata took 22 ms
 Loading persistent took 0 ms
-Running init code took 61 ms
-Loading analysis data took 5 ms
-Analyze and compile ATL took 3 ms
-Reloading save slot metadata took 19 ms
+Running init code took 59 ms
+Loading analysis data took 8 ms
+Analyze and compile ATL took 2 ms
+Reloading save slot metadata took 11 ms
 Backing up script files to '/Users/nankhan/Library/RenPy/backups/Ephemeral_Life_Resonance':
-Dump and make backups took 49 ms
+Dump and make backups took 47 ms
 Cleaning cache took 0 ms
 Making clean stores took 0 ms
-Initial gc took 33 ms
+Initial gc took 31 ms
 DPI scale factor: 1.000000
-Creating interface object took 1 ms
+Creating interface object took 0 ms
 Init translation took 0 ms
 Cleaning stores took 0 ms
 Load screen analysis took 1 ms
-Analyze screens took 12 ms
+Analyze screens took 14 ms
 Save screen analysis took 13 ms
-Save pyanalysis took 5 ms
-Save bytecode took 26 ms
+Save pyanalysis took 0 ms
+Save bytecode took 27 ms
 Running _start took 1 ms
-Interface start took 587 ms
+Interface start took 586 ms
 
 Initializing gl2 renderer:
 primary display bounds: (0, 0, 1680, 1050)
@@ -40,11 +40,5 @@ Screen sizes: virtual=(1920, 1080) physical=(1328, 747) drawable=(2656, 1494)
 Maximum texture size: 4096x4096
 🎵 음악 재생: audio/title_theme.ogg
 🎵 음악 전환: audio/sub_theme.ogg
-🎵 공간 변경: cafe - peaceful 음악 재생
-음악 정지
-조용한 공간: campus - 음악 정지
-🎵 음악 전환: audio/study_theme.ogg
-🎵 감정 음악: study -> audio/study_theme.ogg
-🎵 공간 변경: karaoke - study 음악 재생
 음악 정지
 조용한 공간: campus - 음악 정지
