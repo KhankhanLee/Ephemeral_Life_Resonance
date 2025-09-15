@@ -117,7 +117,7 @@ label morning_slot:
             "아르바이트: 돈 , 스트레스":
                 scene bg cafe
                 show mc_neutral at left
-                $ money = clamp(money + 8, 0, 999)  # 10 → 8로 감소
+                $ money = clamp(money + 8, 0, 999)  
                 $ stress = clamp(stress + 2, 0, 100)
                 $ update_location_music("cafe")  # 카페는 음악 재생
                 m "바쁜 아침. 그래도 벌 땐 벌어야지."
@@ -211,7 +211,7 @@ label morning_contact_roll:
         scene bg cafe
         show jin_happy at right
         jin "피방 ㄱㄱ"
-        $ social = clamp(social + 2, 0, 100)  # 3 → 2로 감소
+        $ social = clamp(social + 2, 0, 100)  
         $ stress = clamp(stress - 1, 0, 100)
         m "뭐, 짜피 할 것도 없고. 그려그려. ㄱㄱ"
         jin "ㄱㄱ"
@@ -339,7 +339,7 @@ label morning_contact_roll:
                         menu:
                             "도서관":
                                 scene bg library
-                                $ _q = choose_(JISU_QS)
+                                $ _q = choose_(HAYEON_QS)
                                 $ _face = _q["face"]
                                 $ _tag = "new_girl_2" + _face
                                 show expression _tag at left
@@ -537,7 +537,7 @@ label afternoon_slot:
             hide mc_neutral
         "친구와 점심: 관계 , 돈":
             scene bg cafe
-            $ social = clamp(social + 2, 0, 100)  # 3 → 2로 감소
+            $ social = clamp(social + 2, 0, 100)  
             $ money = clamp(money - 5, 0, 999)
             show jin_think at left
             jin "야, 너 표정 좋아졌다? 준비 잘 되고 있어?"
@@ -567,28 +567,34 @@ label night_slot:
     $ update_location_music("home")
     n "밤. 하루를 마무리할 시간."
     menu:
-        "복습/과제: 공부 +2, 스트레스 +1":
+        "복습/과제: 공부 , 스트레스":
             $ study = clamp(study + 2, 0, 100)
             $ stress = clamp(stress + 1, 0, 100)
             show mc_think at left
             m "조금만 더...근데.. 나는 무얼 위해 공부하는 거지?"
             hide mc_think
-        "독서/저널링: 다짐 +2, 스트레스 -2":
+        "독서/저널링: 다짐 , 스트레스":
             $ resolve = clamp(resolve + 2, 0, 100)
             $ stress = clamp(stress - 2, 0, 100)
             show mc_think at left
             m "글로 쓰며 마음을 정리했다. 인생을 어떻게 마무리 해야 의미있고 아름다울까?"
             hide mc_think
-        "가족 대화: 관계 +2, 돈 0":
+        "가족 대화: 관계 , 돈":
             $ social = clamp(social + 2, 0, 100)
             show mom_think at left             
             mom "요즘 무슨 일 없지? 입대가 얼마 안 남아서 마음이 좀 그러니?"
             m "엄마, 괜찮아요. 무슨 일 없어요! 그동안 감사했습니다."
             hide mom_think
-        "휴식: 스트레스 -3":
+        "휴식: 스트레스":
             $ stress = clamp(stress - 3, 0, 100)
             show mc_happy at left
             m "아무것도 안 하는 용기. 잠시 쉬는 것도 꼭 필요해!"
+            hide mc_happy
+        "야간 알바: 돈, 스트레스":
+            $ money = clamp(money + 10, 0, 999)
+            $ stress = clamp(stress + 2, 0, 100)
+            show mc_happy at left
+            m "이럴 때 한 푼이라도 더 벌어두자."
             hide mc_happy
         "연락하기":
             jump night_contact_roll
@@ -675,8 +681,11 @@ label night_contact_roll:
                 $ new_girl_1_affection = clamp(new_girl_1_affection + _eff.get("newgirl", 0), 0, 100)
                 return
             "거절한다":
-                hide expression _tag
-                show jisu_sad at left
+                hide all
+                hide jisu_happy
+                hide jisu_neutral
+                hide jisu_think
+                show jisu_sad at left with dissolve
                 show mc_think at right
                 $ money = clamp(money +0, 0, 999)
                 $ social = clamp(social +0, 0, 100)
@@ -842,6 +851,53 @@ label night_contact_roll:
             "거절한다":
                 $ stress = clamp(stress - 1, 0, 100)
                 m "모르는 연락은 받지 말자."
+    return
+
+# ====== PROMISE EVENTS ======
+label event_promise(character, content):
+    """약속 이벤트 처리"""
+    scene bg home
+    n "오늘은 [character]와의 약속이 있는 날이다."
+    n "약속 내용: [content]"
+    
+    # 캐릭터별 약속 이벤트 처리
+    if character == "hayeon":
+        show hayeon_happy at left
+        hayeon "안녕! 약속한 대로 왔어!"
+        m "그래, [content]하러 왔어."
+        hayeon "고마워! 정말 기뻐."
+        $ new_girl_2_affection = clamp(new_girl_2_affection + 3, 0, 100)
+        $ social = clamp(social + 2, 0, 100)
+        hide hayeon_happy
+    elif character == "jisu":
+        show jisu_happy at left
+        jisu "와! 정말 왔구나!"
+        m "당연하지, [content]하자고 했잖아."
+        jisu "고마워! 정말 기뻐."
+        $ new_girl_1_affection = clamp(new_girl_1_affection + 3, 0, 100)
+        $ social = clamp(social + 2, 0, 100)
+        hide jisu_happy
+    elif character == "ex":
+        show ex_happy at left
+        ex "정말 왔구나... 고마워."
+        m "약속했으니까, [content]하러 왔어."
+        ex "정말 고마워."
+        $ ex_affection = clamp(ex_affection + 3, 0, 100)
+        $ social = clamp(social + 2, 0, 100)
+        hide ex_happy
+    elif character == "jin":
+        show jin_happy at left
+        jin "야! 정말 왔구나!"
+        m "당연하지, [content]하자고 했잖아."
+        jin "고마워! 정말 기뻐."
+        $ social = clamp(social + 3, 0, 100)
+        hide jin_happy
+    else:
+        n "[character]와 [content]를 하며 좋은 시간을 보냈다."
+        $ social = clamp(social + 2, 0, 100)
+    
+    n "약속을 지켜서 기분이 좋다."
+    $ resolve = clamp(resolve + 1, 0, 100)
     return
 
 # ====== RANDOM EVENTS ======
@@ -1012,6 +1068,21 @@ label ai_single_turn(npc, scene_id, side, conversation_type="casual"):
     # 6) 기억 업데이트
     python:
         ai_memory.append({"npc": npc, "say": line, "picked": choice.get("text", "")})
+
+    # 7) 약속 처리
+    python:
+        promises = resp.get("promises", [])
+        for promise in promises:
+            character = promise.get("character", npc)
+            content = promise.get("content", "")
+            delay_days = promise.get("delay_days", 0)
+            if content and delay_days >= 0:
+                add_promise(character, content, delay_days)
+                # 약속 이벤트도 스케줄에 추가
+                if delay_days == 0:  # 당일 약속
+                    schedule_event(f"promise_{character}", 0, character=character, content=content)
+                else:  # 미래 약속
+                    schedule_event(f"promise_{character}", delay_days, character=character, content=content)
 
     return
 

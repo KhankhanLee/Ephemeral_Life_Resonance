@@ -66,6 +66,7 @@ class AIResponse(BaseModel):
     sprite: SpriteName = "neutral"
     choices: List[Choice] = Field(default_factory=list)
     conversation_end: bool = Field(default=False)
+    promises: List[Dict[str, Any]] = Field(default_factory=list)
 
 class MemoryTurn(BaseModel):
     npc: str
@@ -375,13 +376,15 @@ class CharacterNode:
             "conversation_end": True,
         }
     
-    def detect_and_save_promises(self, text: str, state: Dict[str, Any]):
-        """AI 대화에서 약속을 감지하고 저장"""
+    def detect_and_save_promises(self, text: str, state: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """AI 대화에서 약속을 감지하고 반환"""
         import re
         
         # text가 None이거나 빈 문자열인 경우 처리
         if not text or not isinstance(text, str):
-            return
+            return []
+        
+        detected_promises = []
         
         # 약속 관련 키워드 패턴
         promise_patterns = [
@@ -408,9 +411,17 @@ class CharacterNode:
                     elif re.search(r'(\d+)일', promise_content):
                         delay_days = int(re.search(r'(\d+)일', promise_content).group(1))
                     
-                    # 약속 저장 (실제로는 Ren'Py에서 처리)
+                    # 약속 정보 생성
+                    promise = {
+                        "character": self.character,
+                        "content": promise_content,
+                        "delay_days": delay_days,
+                        "day": state.get("state", {}).get("day", 1) + delay_days
+                    }
+                    detected_promises.append(promise)
                     print(f"약속 감지: {self.character} - {promise_content} ({delay_days}일 후)")
-                    # 여기서는 로그만 출력하고, 실제 저장은 Ren'Py에서 처리
+        
+        return detected_promises
 
     def clamp_effects(self, effects: Dict[str, int]) -> Dict[str, int]:
         safe = {}
@@ -501,8 +512,12 @@ class CharacterNode:
                         ch["text"] = ch["text"].replace("{", "{{").replace("}", "}}")
             
             # 약속 감지 및 저장
+            detected_promises = []
             if "say" in data and data["say"]:
-                self.detect_and_save_promises(data["say"], state)
+                detected_promises = self.detect_and_save_promises(data["say"], state)
+            
+            # promises를 data에 추가
+            data["promises"] = detected_promises
             
             # AIResponse 생성
             try:

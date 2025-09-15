@@ -66,6 +66,14 @@ init python:
                     renpy.call("event_jisu_help", **kwargs)
                 elif event_type == "hayeon_study":
                     renpy.call("event_hayeon_study", **kwargs)
+                elif event_type.startswith("promise_"):
+                    # 약속 이벤트 처리
+                    character = kwargs.get("character", "")
+                    content = kwargs.get("content", "")
+                    if character and content:
+                        handle_promise_event(character, content)
+                        # 약속 이벤트 라벨 호출
+                        renpy.call("event_promise", character=character, content=content)
                 # 다른 이벤트 타입들 추가 가능
             
             # 실행된 이벤트 제거
@@ -124,6 +132,19 @@ init python:
     def get_pending_promises():
         """대기 중인 약속들을 반환"""
         return [p for p in promises if p["status"] == "pending"]
+    
+    def handle_promise_event(character, content):
+        """약속 이벤트 처리"""
+        # 해당 캐릭터의 대기 중인 약속 찾기
+        for promise in promises:
+            if (promise["character"] == character and 
+                promise["content"] == content and 
+                promise["status"] == "pending"):
+                # 약속 완료 처리
+                promise["status"] = "completed"
+                print(f"약속 이벤트 실행: {character} - {content}")
+                return True
+        return False
     
     def get_promises_by_character(character):
         """특정 캐릭터의 약속들을 반환"""
@@ -524,20 +545,29 @@ init -100 python:
             hayeon_affection=new_girl_2_affection,
         )
 
-    # 간단한 HTTP POST (requests 없이 동작)
+    # HTTP POST (requests 라이브러리 사용)
     def post_json(url, payload, headers=None, timeout=20):
         if headers is None: headers = {}
-        data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-        req = urllib.request.Request(url, data=data, headers={
-            "Content-Type":"application/json", **headers
-        })
-        # 일부 환경에서 SSL 검증 이슈 회피 (내부망/개발환경용)
-        ctx = ssl.create_default_context()
         try:
-            with urllib.request.urlopen(req, timeout=timeout, context=ctx) as r:
-                return json.loads(r.read().decode("utf-8"))
+            import requests
+            response = requests.post(
+                url, 
+                json=payload, 
+                headers={"Content-Type": "application/json", **headers},
+                timeout=timeout,
+                verify=True  # SSL 검증 활성화
+            )
+            response.raise_for_status()  # HTTP 오류 시 예외 발생
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"HTTP 요청 오류: {e}")
+            return {"error": f"연결 실패: {str(e)}"}
+        except json.JSONDecodeError as e:
+            print(f"JSON 파싱 오류: {e}")
+            return {"error": f"응답 파싱 실패: {str(e)}"}
         except Exception as e:
-            return {"error": str(e)}
+            print(f"예상치 못한 오류: {e}")
+            return {"error": f"알 수 없는 오류: {str(e)}"}
 
     # LLM 에이전트 래퍼
     class DialogueAI(object):
