@@ -228,6 +228,12 @@ class CharacterNode:
 - 이전 대화와 다른 주제로 자연스럽게 전환하세요.
 - 플레이어의 선택지에 따라 화제를 바꿀 수 있도록 유연하게 대응하세요.
 - 특화 분야는 가끔 언급하되, 대화의 전부가 되지 않도록 하세요.
+
+[약속 만들기 규칙(중요)]
+- 대화 중에 자연스럽게 미래 약속을 제안하세요.
+- "내일", "다음 주", "X일 후" 등의 표현을 사용하여 구체적인 시간을 명시하세요.
+- 약속 내용은 "만나자", "보자", "가자", "하자" 등으로 끝나도록 하세요.
+- 예: "내일 카페에서 만나자", "3일 후에 영화 보자", "다음 주에 쇼핑하자"
 """
 
     def build_user_prompt(self, scene_id: Optional[str], memory: List[MemoryTurn], state: Dict[str, Any], conversation_type: str = "casual") -> str:
