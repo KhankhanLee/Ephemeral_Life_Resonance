@@ -56,6 +56,10 @@ screen ai_choices(choices):
         vbox spacing 8:
             for i, ch in enumerate(choices):
                 textbutton "[ch['text']]" action Return(i)
+    
+    # 디버그용: ESC 키로 강제 종료
+    key "K_ESCAPE" action Return(0)
+    key "mouseup_3" action Return(0)
                 
 style quick_button_text is default:
     color "#e5e7eb"

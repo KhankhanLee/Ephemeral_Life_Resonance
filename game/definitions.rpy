@@ -582,7 +582,7 @@ init -100 python:
 
             payload = {
                 "npc": npc,            # "jisu" / "ex" / "mom" ...
-                "scene_id": scene_id,  # 네가 구분자 붙이기 좋게
+                "scene_id": scene_id,  #구분자 붙이기 좋게
                 "memory": memory,      # 최근 대화 몇 턴
                 "state": state,        # 스탯/플래그
                 "style": "ko-game",    # 톤 힌트
@@ -591,5 +591,6 @@ init -100 python:
             return post_json(self.endpoint, payload, headers=headers)
 
     # 인스턴스 만들기 
-    ai = DialogueAI(endpoint="https://ren-py-chat-dialogue-ai-production.up.railway.app/ai")  
+    #ai = DialogueAI(endpoint="https://ren-py-chat-dialogue-ai-production.up.railway.app/ai") 
+    ai = DialogueAI(endpoint="http://0.0.0.0:8000") 
     ai_memory = []   # 최근 대화 로그 저장 (세이브/로드에 같이 저장됨)

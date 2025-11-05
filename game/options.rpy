@@ -35,7 +35,7 @@ define gui.about = _p("""
 ## 배포판의 실행 파일과 디렉토리에 사용되는 게임의 약식 이름. 이것은 ASCII 전
 ## 용이어야 하며 공백, 콜론 또는 세미콜론을 포함해서는 안 됩니다.
 
-define build.name = "Ephemeral_Life_Resonance"
+define build.name = "EphemeralLifeResonance"
 
 
 ## 음악과 음향 ######################################################################
@@ -201,3 +201,6 @@ init python:
 ## 다.
 
 # define build.itch_project = "renpytom/test-project"
+init python:
+    build.directory_name = "EphemeralLifeResonance"
+    #배포 폴더 이름
