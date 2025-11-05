@@ -42,6 +42,7 @@ init python:
     def schedule_event(event_type, delay_days, **kwargs):
         """지연 이벤트를 스케줄에 추가"""
         target_day = day + delay_days
+        
         if target_day not in scheduled_events:
             scheduled_events[target_day] = []
         
@@ -50,15 +51,27 @@ init python:
             "kwargs": kwargs
         }
         scheduled_events[target_day].append(event)
-        print(f"이벤트 스케줄: {event_type} - {delay_days}일 후 (Day {target_day})")
+        
+        print(f"이벤트 스케줄 추가:")
+        print(f"   - 타입: {event_type}")
+        print(f"   - 목표일: Day {target_day} ({delay_days}일 후)")
+        print(f"   - 데이터: {kwargs}")
+        print(f"   - 현재 Day {target_day} 스케줄: {len(scheduled_events[target_day])}개 이벤트")
     
     def check_scheduled_events():
         """오늘 예정된 이벤트들을 확인하고 실행"""
+        print(f"Day {day} 이벤트 체크 시작...")
+        print(f"전체 스케줄: {scheduled_events}")
+        
         if day in scheduled_events:
             events = scheduled_events[day]
+            print(f"Day {day}에 {len(events)}개 이벤트 발견!")
+            
             for event in events:
                 event_type = event["type"]
                 kwargs = event["kwargs"]
+                
+                print(f"이벤트 실행: {event_type}")
                 
                 if event_type == "baseball_game":
                     renpy.call("event_baseball_game", **kwargs)
@@ -71,13 +84,20 @@ init python:
                     character = kwargs.get("character", "")
                     content = kwargs.get("content", "")
                     if character and content:
+                        print(f"약속 이벤트 실행: {character} - {content}")
                         handle_promise_event(character, content)
                         # 약속 이벤트 라벨 호출
                         renpy.call("event_promise", character=character, content=content)
-                # 다른 이벤트 타입들 추가 가능
+                    else:
+                        print(f"약속 이벤트 데이터 부족: character={character}, content={content}")
+                else:
+                    print(f"알 수 없는 이벤트 타입: {event_type}")
             
             # 실행된 이벤트 제거
             del scheduled_events[day]
+            print(f"Day {day} 이벤트 정리 완료")
+        else:
+            print(f"Day {day}에 예정된 이벤트 없음")
     
     def has_scheduled_event(event_type, delay_days=None):
         """특정 이벤트가 스케줄되어 있는지 확인"""

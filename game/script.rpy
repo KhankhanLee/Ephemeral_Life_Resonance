@@ -1069,20 +1069,29 @@ label ai_single_turn(npc, scene_id, side, conversation_type="casual"):
     python:
         ai_memory.append({"npc": npc, "say": line, "picked": choice.get("text", "")})
 
-    # 7) 약속 처리
+    # 7) 약속 처리 (강화된 디버깅)
     python:
         promises = resp.get("promises", [])
+        if promises:
+            print(f"약속 {len(promises)}개 감지됨!")
         for promise in promises:
             character = promise.get("character", npc)
             content = promise.get("content", "")
             delay_days = promise.get("delay_days", 0)
+            
             if content and delay_days >= 0:
-                add_promise(character, content, delay_days)
-                # 약속 이벤트도 스케줄에 추가
-                if delay_days == 0:  # 당일 약속
-                    schedule_event(f"promise_{character}", 0, character=character, content=content)
-                else:  # 미래 약속
-                    schedule_event(f"promise_{character}", delay_days, character=character, content=content)
+                # 약속 추가
+                promise_id = add_promise(character, content, delay_days)
+                print(f"약속 등록: {character} - {content} (Day {day + delay_days})")
+                
+                # 약속 이벤트를 스케줄에 강제 추가
+                event_type = f"promise_{character}_{promise_id}"
+                schedule_event(event_type, delay_days, character=character, content=content)
+                print(f"이벤트 스케줄: {event_type} - {delay_days}일 후")
+                
+                # 즉시 확인
+                print(f"현재 스케줄된 이벤트: {scheduled_events}")
+                print(f"현재 약속 목록: {promises}")
 
     return
 
