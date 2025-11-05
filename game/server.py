@@ -31,6 +31,35 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# ========= Response Cache =========
+_RESPONSE_CACHE = {}
+MAX_CACHE_SIZE = 500  # 캐시 최대 크기
+CACHE_HITS = 0
+CACHE_MISSES = 0
+
+def get_cache_key(state: Dict) -> str:
+    """캐시 키 생성 - 동일한 대화 맥락은 동일한 응답 재사용"""
+    npc = state.get("npc", "unknown")
+    scene_id = state.get("scene_id", "unknown")
+    memory = state.get("memory", [])
+    
+    # 최근 3개 대화만 캐시 키에 포함
+    mem_str = "|".join([
+        f"{t.get('npc', '')}:{t.get('say', '')[:30]}" 
+        for t in memory[-3:] if isinstance(t, dict)
+    ])
+    
+    return f"{npc}:{scene_id}:{mem_str}"
+
+def clear_old_cache():
+    """캐시 크기 제한 - 오래된 항목 삭제"""
+    global _RESPONSE_CACHE
+    if len(_RESPONSE_CACHE) > MAX_CACHE_SIZE:
+        # 앞쪽 절반 삭제 (FIFO 방식)
+        items = list(_RESPONSE_CACHE.items())
+        _RESPONSE_CACHE = dict(items[len(items)//2:])
+        print(f"🗑️ 캐시 정리: {len(_RESPONSE_CACHE)}개 남음")
+
 # ========= Rate Limiting =========
 _BUCKET = {}
 CAPACITY = 20
@@ -625,6 +654,8 @@ def health():
 
 @app.post("/ai")
 async def ai(req: Request):
+    global CACHE_HITS, CACHE_MISSES
+    
     # Rate limiting
     ip = req.client.host if req.client else "unknown"
     if not allow(ip):
@@ -653,15 +684,34 @@ async def ai(req: Request):
         "error":None,
         "conversation_type":payload.conversation_type,
     }
+    
+    # 캐시 확인
+    cache_key = get_cache_key(state)
+    if cache_key in _RESPONSE_CACHE:
+        CACHE_HITS += 1
+        print(f"캐시 히트! (hits: {CACHE_HITS}, misses: {CACHE_MISSES}, 절약률: {CACHE_HITS/(CACHE_HITS+CACHE_MISSES)*100:.1f}%)")
+        return JSONResponse(
+            content=_RESPONSE_CACHE[cache_key],
+            headers={"Cache-Control": "no-store", "X-Cache": "HIT"},
+        )
+    
+    CACHE_MISSES += 1
+    print(f"캐시 미스 - API 호출 (hits: {CACHE_HITS}, misses: {CACHE_MISSES})")
 
     try:
         # Run LangGraph
         result = await conversation_graph.ainvoke(state)
         
         if result["response"]:
+            response_data = result["response"].model_dump()
+            
+            # 캐시에 저장
+            _RESPONSE_CACHE[cache_key] = response_data
+            clear_old_cache()  # 캐시 크기 관리
+            
             return JSONResponse(
-                content=result["response"].model_dump(),
-                headers={"Cache-Control": "no-store"},
+                content=response_data,
+                headers={"Cache-Control": "no-store", "X-Cache": "MISS"},
             )
         else:
             # Fallback
@@ -675,10 +725,10 @@ async def ai(req: Request):
         print(f"LangGraph 실행 중 에러: {e}")
         # Fallback
         fallback = character_nodes.get(payload.npc, character_nodes["jisu"]).default_fallback()
-    return JSONResponse(
+        return JSONResponse(
             content=fallback,
             headers={"Cache-Control": "no-store"},
-    )
+        )
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", "8000"))
