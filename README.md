@@ -157,8 +157,9 @@ Ephemeral_Life_Resonance/
 ```
 
 ## 🎨 게임 스크린샷
+<img width="1329" height="776" alt="image" src="https://github.com/user-attachments/assets/2388be6c-02e0-4c70-8952-3c682fd14764" />
 
-*게임 스크린샷을 추가하세요*
+
 
 ## 🤝 기여하기
 
