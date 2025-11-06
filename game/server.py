@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field, ValidationError, conint
-from typing import List, Dict, Optional, Literal, Any, TypedDict
+from pydantic import BaseModel, Field, ValidationError
+from typing import List, Dict, Optional, Literal, Any, TypedDict, Annotated
+from typing_extensions import Annotated as TypingAnnotated
 from dotenv import load_dotenv
 import uvicorn, os, json, random, time, hashlib
 import google.generativeai as genai
@@ -38,18 +39,27 @@ CACHE_HITS = 0
 CACHE_MISSES = 0
 
 def get_cache_key(state: Dict) -> str:
-    """캐시 키 생성 - 동일한 대화 맥락은 동일한 응답 재사용"""
+    """캐시 키 생성 - 대화 맥락 + 게임 상태 포함으로 다양성 확보"""
     npc = state.get("npc", "unknown")
     scene_id = state.get("scene_id", "unknown")
     memory = state.get("memory", [])
+    game_state = state.get("state", {})
     
-    # 최근 3개 대화만 캐시 키에 포함
+    # 게임 진행도 추가 (day, 대화 횟수)
+    day = game_state.get("day", 1)
+    conversation_count = len(memory)  # 대화 횟수로 다양성 확보
+    
+    # 최근 5개 대화 포함 (3→5로 증가)
     mem_str = "|".join([
-        f"{t.get('npc', '')}:{t.get('say', '')[:30]}" 
-        for t in memory[-3:] if isinstance(t, dict)
+        f"{t.get('npc', '')}:{t.get('say', '')[:40]}" 
+        for t in memory[-5:] if isinstance(t, dict)
     ])
     
-    return f"{npc}:{scene_id}:{mem_str}"
+    # 주요 스탯도 포함 (큰 변화만 감지)
+    stress_level = game_state.get("stress", 50) // 20  # 0~4 단계
+    social_level = game_state.get("social", 50) // 20
+    
+    return f"{npc}:{scene_id}:d{day}:c{conversation_count}:s{stress_level}s{social_level}:{mem_str}"
 
 def clear_old_cache():
     """캐시 크기 제한 - 오래된 항목 삭제"""
@@ -58,7 +68,7 @@ def clear_old_cache():
         # 앞쪽 절반 삭제 (FIFO 방식)
         items = list(_RESPONSE_CACHE.items())
         _RESPONSE_CACHE = dict(items[len(items)//2:])
-        print(f"🗑️ 캐시 정리: {len(_RESPONSE_CACHE)}개 남음")
+        print(f"캐시 정리: {len(_RESPONSE_CACHE)}개 남음")
 
 # ========= Rate Limiting =========
 _BUCKET = {}
@@ -87,7 +97,7 @@ EffectKeys = Literal[
 
 class Choice(BaseModel):
     text: str = Field(default="...", min_length=1, max_length=140)
-    effects: Dict[EffectKeys, conint(ge=-10, le=10)] = Field(default_factory=dict)
+    effects: Dict[EffectKeys, Annotated[int, Field(ge=-10, le=10)]] = Field(default_factory=dict)
     next: Optional[str] = None
 
 class AIResponse(BaseModel):
@@ -258,16 +268,24 @@ class CharacterNode:
 - 플레이어의 선택지에 따라 화제를 바꿀 수 있도록 유연하게 대응하세요.
 - 특화 분야는 가끔 언급하되, 대화의 전부가 되지 않도록 하세요.
 
-[약속 만들기 규칙(중요)]
-- 대화 중에 자연스럽게 미래 약속을 제안하세요.
-- "내일", "다음 주", "X일 후" 등의 표현을 사용하여 구체적인 시간을 명시하세요.
-- 약속 내용은 "만나자", "보자", "가자", "하자" 등으로 끝나도록 하세요.
-- 예: "내일 카페에서 만나자", "3일 후에 영화 보자", "다음 주에 쇼핑하자"
+[약속 만들기 규칙(매우 중요)]
+- 약속을 제안할 때는 반드시 선택지에 포함하세요.
+- 약속 수락 선택지: "좋아, 내일 만나자" 형식으로 구체적 시간 포함
+- 약속 거절 선택지: "미안, 그날은 힘들 것 같아" 등의 대안 제공
+- 약속 수락 선택지의 text에는 반드시 시간 표현(내일, 3일후, 오늘 2시 등)을 포함하세요.
+- 약속 선택지 예시:
+  * {{"text": "좋아, 내일 카페에서 만나자", "effects": {{"social": 2}}, "next": null}}
+  * {{"text": "그래, 3일 후에 영화 보자", "effects": {{"social": 2}}, "next": null}}
+  * {{"text": "오늘 오후 2시에 만날래?", "effects": {{"social": 2}}, "next": null}}
+- 약속 제안 시 say 필드에서 "어때?", "괜찮아?" 등으로 질문하세요.
 """
 
     def build_user_prompt(self, scene_id: Optional[str], memory: List[MemoryTurn], state: Dict[str, Any], conversation_type: str = "casual") -> str:
         mem = self.summarize_memory(memory)
         state_str = self.short_state(state)
+        
+        # 플레이어 이름 추출
+        player_name = state.get("mc_name", "하진")
         
         # 대화 유형별 특별 지시사항
         conv_type_info = CONVERSATION_TYPES.get(conversation_type, CONVERSATION_TYPES["casual"])
@@ -277,11 +295,14 @@ class CharacterNode:
 - scene_id: {scene_id or "unknown"}
 - 현재 상태: {state_str}
 - 대화 유형: {conversation_type} ({conv_type_info['description']})
+- 플레이어 이름: {player_name}
 
 [최근 대화 요약]
 {mem}
 
 [지시]
+- 플레이어를 부를 때는 반드시 "{player_name}"라는 이름을 사용하세요.
+- @@name@@, 플레이어 이름, [이름] 등의 플레이스홀더를 사용하지 마세요.
 - 위 상황에 맞는 자연스러운 한 줄~두 줄 대사(say)와 표정(sprite), 그리고 2~3개의 선택지를 만드세요.
 - 선택지는 서로 다른 전략(공감/거리두기/실용적 조언 등)을 제시하세요.
 - state를 과격하게 흔들지 않도록 effects는 -3~+3 중심으로 설계하세요.
@@ -310,7 +331,7 @@ class CharacterNode:
         if not state or not isinstance(state, dict):
             return "state=empty"
             
-        keys = ["day", "days_left", "stress", "resolve", "social", "study", "fitness", "money", 
+        keys = ["mc_name", "day", "days_left", "stress", "resolve", "social", "study", "fitness", "money", 
                 "route_ex", "ex_affection", "jisu_affection", "hayeon_affection", "counselor_trust"]
         parts = []
         for k in keys:
@@ -412,7 +433,7 @@ class CharacterNode:
         }
     
     def detect_and_save_promises(self, text: str, state: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """AI 대화에서 약속을 감지하고 반환"""
+        """AI 대화에서 약속을 감지하고 반환 (시간대 포함)"""
         import re
         
         # text가 None이거나 빈 문자열인 경우 처리
@@ -421,7 +442,15 @@ class CharacterNode:
         
         detected_promises = []
         
-        # 약속 관련 키워드 패턴
+        # 시간대 약속 패턴 (오늘 + 시간)
+        time_patterns = [
+            (r"오늘\s*(\d+)시", "today"),
+            (r"오늘\s*(오전|아침)", "morning"),
+            (r"오늘\s*(점심|낮|오후)", "afternoon"),
+            (r"오늘\s*(저녁|밤)", "night"),
+        ]
+        
+        # 일반 약속 패턴
         promise_patterns = [
             r"(\d+일\s*후에?\s*.*?)(?:만나자|보자|가자|하자)",
             r"(내일\s*.*?)(?:만나자|보자|가자|하자)",
@@ -431,6 +460,24 @@ class CharacterNode:
             r"(약속.*?)(?:만나자|보자|가자|하자)",
         ]
         
+        # 1. 시간대 약속 감지 (오늘 2시, 오늘 오후 등)
+        for pattern, time_slot in time_patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                time_info = match.group(1) if match.lastindex else time_slot
+                promise_content = f"{time_info}에 만나기"
+                
+                promise = {
+                    "character": self.character,
+                    "content": promise_content,
+                    "delay_days": 0,
+                    "time_slot": time_slot if isinstance(time_slot, str) else "afternoon",  # 숫자면 오후로 처리
+                    "day": state.get("state", {}).get("day", 1)
+                }
+                detected_promises.append(promise)
+                print(f"시간 약속 감지: {self.character} - {promise_content} ({time_slot})")
+        
+        # 2. 일반 약속 감지
         for pattern in promise_patterns:
             matches = re.findall(pattern, text, re.IGNORECASE)
             for match in matches:
@@ -451,6 +498,7 @@ class CharacterNode:
                         "character": self.character,
                         "content": promise_content,
                         "delay_days": delay_days,
+                        "time_slot": None,  # 일반 약속은 시간대 없음
                         "day": state.get("state", {}).get("day", 1) + delay_days
                     }
                     detected_promises.append(promise)

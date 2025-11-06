@@ -93,6 +93,31 @@ label day_loop:
 
 # ====== SLOT MENUS ======
 label morning_slot:
+    # 아침 시간대 약속 체크
+    python:
+        morning_promises = [e for d, events in scheduled_events.items() if d == day 
+                            for e in events if e.get("kwargs", {}).get("time_slot") == "morning"]
+    
+    # 약속이 있으면 약속 이벤트만 실행하고 일반 메뉴 건너뛰기
+    if morning_promises:
+        python:
+            for event in morning_promises:
+                character = event["kwargs"]["character"]
+                content = event["kwargs"]["content"]
+                print(f"아침 약속 실행: {character} - {content}")
+        call event_promise_with_ai(morning_promises[0]["kwargs"]["character"], morning_promises[0]["kwargs"]["content"], "morning_promise")
+        
+        # 약속 실행 후 이벤트 제거
+        python:
+            for event in morning_promises:
+                if day in scheduled_events:
+                    if event in scheduled_events[day]:
+                        scheduled_events[day].remove(event)
+                    if not scheduled_events[day]:  # 리스트가 비었으면 키 삭제
+                        del scheduled_events[day]
+        return
+    
+    # 약속이 없을 때만 일반 메뉴 실행
     scene bg home
     n "아침. 무엇을 할까?"
     $ t= random_(100)
@@ -516,6 +541,31 @@ label morning_contact_roll:
     return
 
 label afternoon_slot:
+    # 오후 시간대 약속 체크
+    python:
+        afternoon_promises = [e for d, events in scheduled_events.items() if d == day 
+                            for e in events if e.get("kwargs", {}).get("time_slot") == "afternoon"]
+    
+    # 약속이 있으면 약속 이벤트만 실행하고 일반 메뉴 건너뛰기
+    if afternoon_promises:
+        python:
+            for event in afternoon_promises:
+                character = event["kwargs"]["character"]
+                content = event["kwargs"]["content"]
+                print(f"오후 약속 실행: {character} - {content}")
+        call event_promise_with_ai(afternoon_promises[0]["kwargs"]["character"], afternoon_promises[0]["kwargs"]["content"], "afternoon_promise")
+        
+        # 약속 실행 후 이벤트 제거
+        python:
+            for event in afternoon_promises:
+                if day in scheduled_events:
+                    if event in scheduled_events[day]:
+                        scheduled_events[day].remove(event)
+                    if not scheduled_events[day]:  # 리스트가 비었으면 키 삭제
+                        del scheduled_events[day]
+        return
+    
+    # 약속이 없을 때만 일반 메뉴 실행
     scene bg campus
     # 낮 슬롯 시작 시 조용한 공간으로 설정
     $ update_location_music("campus")
@@ -562,6 +612,31 @@ label afternoon_slot:
     return
 
 label night_slot:
+    # 밤 시간대 약속 체크
+    python:
+        night_promises = [e for d, events in scheduled_events.items() if d == day 
+                        for e in events if e.get("kwargs", {}).get("time_slot") == "night"]
+    
+    # 약속이 있으면 약속 이벤트만 실행하고 일반 메뉴 건너뛰기
+    if night_promises:
+        python:
+            for event in night_promises:
+                character = event["kwargs"]["character"]
+                content = event["kwargs"]["content"]
+                print(f"밤 약속 실행: {character} - {content}")
+        call event_promise_with_ai(night_promises[0]["kwargs"]["character"], night_promises[0]["kwargs"]["content"], "night_promise")
+        
+        # 약속 실행 후 이벤트 제거
+        python:
+            for event in night_promises:
+                if day in scheduled_events:
+                    if event in scheduled_events[day]:
+                        scheduled_events[day].remove(event)
+                    if not scheduled_events[day]:  # 리스트가 비었으면 키 삭제
+                        del scheduled_events[day]
+        return
+    
+    # 약속이 없을 때만 일반 메뉴 실행
     scene bg room
     # 밤 슬롯 시작 시 조용한 공간으로 설정
     $ update_location_music("home")
@@ -900,6 +975,55 @@ label event_promise(character, content):
     $ resolve = clamp(resolve + 1, 0, 100)
     return
 
+# 시간대 약속 이벤트 (AI와 대화)
+label event_promise_with_ai(character, content, scene_id):
+    """시간대 약속 - AI가 기억을 가지고 나타남"""
+    scene bg campus
+    n "[character]와의 약속 시간이다."
+    n "약속 내용: [content]"
+    
+    # AI 메모리에 약속 정보 추가
+    python:
+        ai_memory.append({
+            "npc": "system",
+            "say": f"오늘 {content} 약속이 있었음",
+            "picked": "약속 시작"
+        })
+    
+    # AI 대화 시작 (약속 맥락 포함)
+    call ai_single_turn(character, scene_id, "left", "promise_event")
+    
+    # 추가 대화 (선택지에 따라)
+    python:
+        continue_conversation = True
+        turns = 0
+        max_turns = 5  # 최대 5턴
+    
+    while continue_conversation and turns < max_turns:
+        $ turns += 1
+        $ last_choice = ai_memory[-1].get("picked", "") if ai_memory else ""
+        
+        # 대화 종료 조건 체크
+        if "나중에" in last_choice or "그만" in last_choice or "끝" in last_choice:
+            $ continue_conversation = False
+        else:
+            call ai_single_turn(character, scene_id, "left", "promise_event")
+    
+    n "약속을 지켜서 기분이 좋다."
+    $ resolve = clamp(resolve + 1, 0, 100)
+    
+    # 호감도 증가
+    python:
+        if character == "hayeon":
+            new_girl_2_affection = clamp(new_girl_2_affection + 3, 0, 100)
+        elif character == "jisu":
+            new_girl_1_affection = clamp(new_girl_1_affection + 3, 0, 100)
+        elif character == "ex":
+            ex_affection = clamp(ex_affection + 3, 0, 100)
+        social = clamp(social + 2, 0, 100)
+    
+    return
+
 # ====== RANDOM EVENTS ======
 label random_event:
     $ r = random_(5)
@@ -1067,31 +1191,71 @@ label ai_single_turn(npc, scene_id, side, conversation_type="casual"):
 
     # 6) 기억 업데이트
     python:
-        ai_memory.append({"npc": npc, "say": line, "picked": choice.get("text", "")})
+        picked_text = choice.get("text", "")
+        ai_memory.append({"npc": npc, "say": line, "picked": picked_text})
 
-    # 7) 약속 처리 (강화된 디버깅)
+    # 7) 약속 처리 (플레이어 선택 기반)
     python:
-        promises = resp.get("promises", [])
-        if promises:
-            print(f"약속 {len(promises)}개 감지됨!")
-        for promise in promises:
-            character = promise.get("character", npc)
-            content = promise.get("content", "")
-            delay_days = promise.get("delay_days", 0)
+        import re
+        
+        # 플레이어가 선택한 텍스트에서 약속 감지
+        picked_text = choice.get("text", "")
+        detected_promise = None
+        
+        # 약속 패턴 감지 (선택지에서)
+        promise_keywords = [r"만나자", r"보자", r"가자", r"하자"]
+        has_promise_keyword = any(re.search(kw, picked_text) for kw in promise_keywords)
+        
+        if has_promise_keyword:
+            print(f"플레이어가 약속 선택: {picked_text}")
             
-            if content and delay_days >= 0:
-                # 약속 추가
-                promise_id = add_promise(character, content, delay_days)
-                print(f"약속 등록: {character} - {content} (Day {day + delay_days})")
-                
-                # 약속 이벤트를 스케줄에 강제 추가
-                event_type = f"promise_{character}_{promise_id}"
-                schedule_event(event_type, delay_days, character=character, content=content)
+            # 시간대 감지
+            time_slot = None
+            delay_days = 0
+            
+            # 오늘 + 시간
+            if re.search(r"오늘\s*(\d+)시", picked_text):
+                time_slot = "afternoon"
+                delay_days = 0
+                print(f"오늘 시간 약속 감지")
+            elif re.search(r"오늘\s*(오전|아침)", picked_text):
+                time_slot = "morning"
+                delay_days = 0
+            elif re.search(r"오늘\s*(점심|낮|오후)", picked_text):
+                time_slot = "afternoon"
+                delay_days = 0
+            elif re.search(r"오늘\s*(저녁|밤)", picked_text):
+                time_slot = "night"
+                delay_days = 0
+            # 날짜 감지
+            elif "내일" in picked_text:
+                delay_days = 1
+            elif "다음 주" in picked_text or "다음주" in picked_text:
+                delay_days = 7
+            elif re.search(r'(\d+)일\s*후', picked_text):
+                match = re.search(r'(\d+)일\s*후', picked_text)
+                delay_days = int(match.group(1))
+            
+            # 약속 등록
+            promise_id = add_promise(npc, picked_text, delay_days)
+            print(f"약속 등록: {npc} - {picked_text} (Day {day + delay_days})")
+            
+            # 이벤트 스케줄
+            if time_slot:
+                event_type = f"promise_{npc}_{promise_id}_slot_{time_slot}"
+                schedule_event(event_type, delay_days, npc=npc, character=npc, content=picked_text, time_slot=time_slot)
+                print(f"시간대 이벤트 스케줄: {event_type} - {time_slot}")
+            else:
+                event_type = f"promise_{npc}_{promise_id}"
+                schedule_event(event_type, delay_days, npc=npc, character=npc, content=picked_text)
                 print(f"이벤트 스케줄: {event_type} - {delay_days}일 후")
-                
-                # 즉시 확인
-                print(f"현재 스케줄된 이벤트: {scheduled_events}")
-                print(f"현재 약속 목록: {promises}")
+            
+            # AI 메모리에 약속 정보 추가
+            ai_memory.append({
+                "npc": "system",
+                "say": f"약속 확정: {picked_text}",
+                "picked": "약속 등록됨"
+            })
 
     return
 

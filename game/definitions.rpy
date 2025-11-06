@@ -4,10 +4,12 @@ define jin        = Character("진수",     color="#b48ead", image="jin")
 define ex         = Character("수아",     color="#d08770", image="ex")
 define sis        = Character("여동생",   color="#a3be8c", image="sis")
 define new_girl_1 = Character("지수",     color="#e78ac3", image="jisu")
+define jisu       = new_girl_1  
 define coach      = Character("코치",     color="#81a1c1", image="coach")
 define n          = Character("",color="#FFF0") #내레이터 
 define mom        = Character("엄마",    color="#e88ac2", image="mom")
 define new_girl_2 = Character("하연",    color="#e88ac1", image="hayeon")
+define hayeon     = new_girl_2 
 
 # ===== Defaults =====
 default mc_name = "하진"

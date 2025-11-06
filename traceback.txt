@@ -1,88 +1,50 @@
 ﻿I'm sorry, but an uncaught exception occurred.
 
 While running game code:
-  File "game/script.rpy", line 66, in script call
-    call morning_slot
-  File "game/script.rpy", line 203, in script call
-    call ai_turn(selected_character, "morning_contact", side="left", conversation_type=conversation_type)
-  File "game/script.rpy", line 916, in script call
-    call ai_conversation_loop(npc, scene_id, side, conversation_count, conversation_ended, conversation_type)
-  File "game/script.rpy", line 950, in script call
-    call ai_conversation_loop(npc, scene_id, side, conversation_count, conversation_ended, conversation_type)
-  File "game/script.rpy", line 950, in script call
-    call ai_conversation_loop(npc, scene_id, side, conversation_count, conversation_ended, conversation_type)
-  File "game/script.rpy", line 938, in script call
-    call ai_single_turn(npc, scene_id, side, conversation_type)
-  File "game/script.rpy", line 982, in script
-    $ renpy.say(who, line)
-  File "game/script.rpy", line 982, in <module>
-    $ renpy.say(who, line)
-      ~~~~~~~~~^^^^^^^^^^^
-  File "<none>", line 1
-    영화 제목
-      ^^     
-SyntaxError: invalid syntax
+NameError: name 'hayeon' is not defined
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "game/script.rpy", line 73, in script call
+    $ check_scheduled_events()
+  File "game/script.rpy", line 888, in script
+    hayeon "안녕! 약속한 대로 왔어!"
+Exception: Sayer 'hayeon' is not defined.
 
 -- Full Traceback ------------------------------------------------------------
 
 Traceback (most recent call last):
-  File "game/script.rpy", line 66, in script call
-    call morning_slot
-  File "game/script.rpy", line 203, in script call
-    call ai_turn(selected_character, "morning_contact", side="left", conversation_type=conversation_type)
-  File "game/script.rpy", line 916, in script call
-    call ai_conversation_loop(npc, scene_id, side, conversation_count, conversation_ended, conversation_type)
-  File "game/script.rpy", line 950, in script call
-    call ai_conversation_loop(npc, scene_id, side, conversation_count, conversation_ended, conversation_type)
-  File "game/script.rpy", line 950, in script call
-    call ai_conversation_loop(npc, scene_id, side, conversation_count, conversation_ended, conversation_type)
-  File "game/script.rpy", line 938, in script call
-    call ai_single_turn(npc, scene_id, side, conversation_type)
-  File "game/script.rpy", line 982, in script
-    $ renpy.say(who, line)
-  File "renpy/ast.py", line 1187, in execute
-    renpy.python.py_exec_bytecode(self.code.bytecode, self.hide, store=self.store)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/python.py", line 1260, in py_exec_bytecode
-    exec(bytecode, globals, locals)
-    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "game/script.rpy", line 982, in <module>
-    $ renpy.say(who, line)
-      ~~~~~~~~~^^^^^^^^^^^
-  File "renpy/exports/sayexports.py", line 129, in say
-    who(what, *args, **kwargs)
-    ~~~^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/character.py", line 1528, in __call__
-    what = self.prefix_suffix("what", self.what_prefix, what, self.what_suffix)
-           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/character.py", line 1442, in prefix_suffix
-    return sub(prefix) + sub(body, translate=not renpy.game.context().translated) + sub(suffix)
-                         ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^              
-  File "renpy/character.py", line 1421, in sub
-    return renpy.substitutions.substitute(s, scope=scope, force=force, translate=translate)[0]
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   
-  File "renpy/substitutions.py", line 355, in substitute
-    s = interpolate(s, variables)  # type: ignore
-        ~~~~~~~~~~~^^^^^^^^^^^^^^                
-  File "renpy/substitutions.py", line 89, in interpolate
-    raise e
-  File "renpy/substitutions.py", line 81, in interpolate
-    value = renpy.python.py_eval(code, {}, scope)
-            ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
-  File "renpy/python.py", line 1290, in py_eval
-    code = py_compile(code, "eval")
-           ~~~~~~~~~~^^^^^^^^^^^^^^
-  File "renpy/python.py", line 1247, in py_compile
-    raise e
-  File "renpy/python.py", line 1177, in py_compile
-    tree = compile(source, filename, py_mode, ast.PyCF_ONLY_AST | flags, True)
-           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "<none>", line 1
-    영화 제목
-      ^^     
-SyntaxError: invalid syntax
+  File "renpy/ast.py", line 625, in eval_who
+    return renpy.python.py_eval(who)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "renpy/python.py", line 1292, in py_eval
+    return py_eval_bytecode(code, globals, locals)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/python.py", line 1285, in py_eval_bytecode
+    return eval(bytecode, globals, locals)
+           ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<none>", line 1, in <module>
+NameError: name 'hayeon' is not defined
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "game/script.rpy", line 73, in script call
+    $ check_scheduled_events()
+  File "game/script.rpy", line 888, in script
+    hayeon "안녕! 약속한 대로 왔어!"
+  File "renpy/ast.py", line 2915, in execute
+    Say.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "renpy/ast.py", line 956, in execute
+    who = eval_who(self.who, self.who_fast)
+          ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/ast.py", line 627, in eval_who
+    raise Exception("Sayer '%s' is not defined." % who)
+Exception: Sayer 'hayeon' is not defined.
 
 macOS-10.16-x86_64-i386-64bit x86_64
 Ren'Py 8.4.1.25072401
 찰나의 그 아이 (Ephemeral_Life_Resonance) 0.1.1 Beta
-Sun Sep 14 23:43:44 2025
+Thu Nov  6 11:28:34 2025
