@@ -156,10 +156,14 @@ Ephemeral_Life_Resonance/
 └── README.md                 # 프로젝트 문서
 ```
 
-## 🎨 게임 스크린샷
+## � 게임 플레이 영상
+
+> 🎥 **[게임 플레이 영상 보기]https://youtu.be/TaRhpvyfIxE**
+
+실제 게임 플레이를 확인하고 싶으시다면 위 링크를 클릭하세요!
+
+## �🎨 게임 스크린샷
 <img width="1329" height="776" alt="image" src="https://github.com/user-attachments/assets/2388be6c-02e0-4c70-8952-3c682fd14764" />
-
-
 
 ## 🤝 기여하기
 
