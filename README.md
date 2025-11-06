@@ -179,7 +179,7 @@ Ephemeral_Life_Resonance/
 
 ## 👨‍💻 개발자
 
-**Your Name** - [@yourusername](https://github.com/yourusername)
+**KhankhanLee** - [@KhankhanLee](https://github.com/KhankhanLee)
 
 ## 🙏 감사의 말
 
