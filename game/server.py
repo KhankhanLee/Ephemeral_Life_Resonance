@@ -273,10 +273,13 @@ class CharacterNode:
 - 약속 수락 선택지: "좋아, 내일 만나자" 형식으로 구체적 시간 포함
 - 약속 거절 선택지: "미안, 그날은 힘들 것 같아" 등의 대안 제공
 - 약속 수락 선택지의 text에는 반드시 시간 표현(내일, 3일후, 오늘 2시 등)을 포함하세요.
+- **요일 표현 사용 권장**: "주말"보다는 "토요일", "평일"보다는 "월요일" 등 구체적인 요일 사용
 - 약속 선택지 예시:
   * {{"text": "좋아, 내일 카페에서 만나자", "effects": {{"social": 2}}, "next": null}}
   * {{"text": "그래, 3일 후에 영화 보자", "effects": {{"social": 2}}, "next": null}}
   * {{"text": "오늘 오후 2시에 만날래?", "effects": {{"social": 2}}, "next": null}}
+  * {{"text": "토요일에 만나자", "effects": {{"social": 2}}, "next": null}}
+  * {{"text": "다음 월요일 점심때 어때?", "effects": {{"social": 2}}, "next": null}}
 - 약속 제안 시 say 필드에서 "어때?", "괜찮아?" 등으로 질문하세요.
 """
 
@@ -287,6 +290,13 @@ class CharacterNode:
         # 플레이어 이름 추출
         player_name = state.get("mc_name", "하진")
         
+        # 현재 요일 정보 추출
+        day_num = state.get("day", 1)
+        start_weekday = state.get("start_day_of_week", 0)  # 0=월요일
+        current_weekday_num = (start_weekday + (day_num - 1)) % 7
+        weekday_names = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"]
+        current_weekday = weekday_names[current_weekday_num]
+        
         # 대화 유형별 특별 지시사항
         conv_type_info = CONVERSATION_TYPES.get(conversation_type, CONVERSATION_TYPES["casual"])
         type_guidance = self._get_conversation_type_guidance(conversation_type)
@@ -294,6 +304,7 @@ class CharacterNode:
         return f"""[장면]
 - scene_id: {scene_id or "unknown"}
 - 현재 상태: {state_str}
+- 현재 요일: {current_weekday} (Day {day_num})
 - 대화 유형: {conversation_type} ({conv_type_info['description']})
 - 플레이어 이름: {player_name}
 
@@ -303,6 +314,7 @@ class CharacterNode:
 [지시]
 - 플레이어를 부를 때는 반드시 "{player_name}"라는 이름을 사용하세요.
 - @@name@@, 플레이어 이름, [이름] 등의 플레이스홀더를 사용하지 마세요.
+- 약속을 잡을 때는 "주말" 같은 애매한 표현보다는 "{current_weekday} 기준으로 토요일", "다음 월요일" 같은 구체적인 요일을 사용하세요.
 - 위 상황에 맞는 자연스러운 한 줄~두 줄 대사(say)와 표정(sprite), 그리고 2~3개의 선택지를 만드세요.
 - 선택지는 서로 다른 전략(공감/거리두기/실용적 조언 등)을 제시하세요.
 - state를 과격하게 흔들지 않도록 effects는 -3~+3 중심으로 설계하세요.
@@ -433,7 +445,7 @@ class CharacterNode:
         }
     
     def detect_and_save_promises(self, text: str, state: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """AI 대화에서 약속을 감지하고 반환 (시간대 포함)"""
+        """AI 대화에서 약속을 감지하고 반환 (시간대 및 요일 포함)"""
         import re
         
         # text가 None이거나 빈 문자열인 경우 처리
@@ -448,6 +460,19 @@ class CharacterNode:
             (r"오늘\s*(오전|아침)", "morning"),
             (r"오늘\s*(점심|낮|오후)", "afternoon"),
             (r"오늘\s*(저녁|밤)", "night"),
+        ]
+        
+        # 요일 약속 패턴
+        weekday_patterns = [
+            r"(월요일[에날]?)\s*(?:만나자|보자|가자|하자)",
+            r"(화요일[에날]?)\s*(?:만나자|보자|가자|하자)",
+            r"(수요일[에날]?)\s*(?:만나자|보자|가자|하자)",
+            r"(목요일[에날]?)\s*(?:만나자|보자|가자|하자)",
+            r"(금요일[에날]?)\s*(?:만나자|보자|가자|하자)",
+            r"(토요일[에날]?)\s*(?:만나자|보자|가자|하자)",
+            r"(일요일[에날]?)\s*(?:만나자|보자|가자|하자)",
+            r"(주말[에]?)\s*(?:만나자|보자|가자|하자)",
+            r"(평일[에]?)\s*(?:만나자|보자|가자|하자)",
         ]
         
         # 일반 약속 패턴
@@ -472,12 +497,48 @@ class CharacterNode:
                     "content": promise_content,
                     "delay_days": 0,
                     "time_slot": time_slot if isinstance(time_slot, str) else "afternoon",  # 숫자면 오후로 처리
-                    "day": state.get("state", {}).get("day", 1)
+                    "day": state.get("state", {}).get("day", 1),
+                    "weekday": None  # 시간대 약속은 요일 없음
                 }
                 detected_promises.append(promise)
                 print(f"시간 약속 감지: {self.character} - {promise_content} ({time_slot})")
         
-        # 2. 일반 약속 감지
+        # 2. 요일 약속 감지 (월요일, 주말 등)
+        for pattern in weekday_patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                weekday_text = match.group(1).strip()
+                promise_content = f"{weekday_text} 만나기"
+                
+                # 요일을 숫자로 변환 (definitions.rpy의 parse_weekday 함수 사용)
+                # 여기서는 간단하게 매핑
+                weekday_map = {
+                    "월요일": 0, "화요일": 1, "수요일": 2, "목요일": 3,
+                    "금요일": 4, "토요일": 5, "일요일": 6,
+                    "주말": 5,  # 토요일
+                    "평일": 0   # 월요일
+                }
+                
+                target_weekday = None
+                for key, val in weekday_map.items():
+                    if key in weekday_text:
+                        target_weekday = val
+                        break
+                
+                if target_weekday is not None:
+                    promise = {
+                        "character": self.character,
+                        "content": promise_content,
+                        "delay_days": -1,  # -1은 요일 기반 계산 필요를 의미
+                        "time_slot": None,
+                        "day": state.get("state", {}).get("day", 1),
+                        "weekday": target_weekday  # 목표 요일 (0=월, 6=일)
+                    }
+                    detected_promises.append(promise)
+                    print(f"요일 약속 감지: {self.character} - {promise_content} (요일: {target_weekday})")
+        
+        # 3. 일반 약속 감지
+        # 3. 일반 약속 감지
         for pattern in promise_patterns:
             matches = re.findall(pattern, text, re.IGNORECASE)
             for match in matches:
@@ -499,7 +560,8 @@ class CharacterNode:
                         "content": promise_content,
                         "delay_days": delay_days,
                         "time_slot": None,  # 일반 약속은 시간대 없음
-                        "day": state.get("state", {}).get("day", 1) + delay_days
+                        "day": state.get("state", {}).get("day", 1) + delay_days,
+                        "weekday": None  # 일반 약속은 요일 없음
                     }
                     detected_promises.append(promise)
                     print(f"약속 감지: {self.character} - {promise_content} ({delay_days}일 후)")

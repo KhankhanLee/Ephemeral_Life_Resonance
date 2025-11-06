@@ -1227,14 +1227,31 @@ label ai_single_turn(npc, scene_id, side, conversation_type="casual"):
             elif re.search(r"오늘\s*(저녁|밤)", picked_text):
                 time_slot = "night"
                 delay_days = 0
-            # 날짜 감지
-            elif "내일" in picked_text:
-                delay_days = 1
-            elif "다음 주" in picked_text or "다음주" in picked_text:
-                delay_days = 7
-            elif re.search(r'(\d+)일\s*후', picked_text):
-                match = re.search(r'(\d+)일\s*후', picked_text)
-                delay_days = int(match.group(1))
+            # 날짜/요일 감지
+            target_weekday = None
+            
+            # 요일 패턴 체크
+            weekday_patterns = {
+                "월요일": 0, "화요일": 1, "수요일": 2, "목요일": 3,
+                "금요일": 4, "토요일": 5, "일요일": 6,
+                "주말": 5, "평일": 0
+            }
+            for weekday_name, weekday_num in weekday_patterns.items():
+                if weekday_name in picked_text:
+                    target_weekday = weekday_num
+                    delay_days = calculate_days_until_weekday(target_weekday)
+                    print(f"요일 약속 감지: {weekday_name} (요일: {target_weekday}, {delay_days}일 후)")
+                    break
+            
+            # 요일이 아닌 경우 일반 날짜 감지
+            if target_weekday is None:
+                if "내일" in picked_text:
+                    delay_days = 1
+                elif "다음 주" in picked_text or "다음주" in picked_text:
+                    delay_days = 7
+                elif re.search(r'(\d+)일\s*후', picked_text):
+                    match = re.search(r'(\d+)일\s*후', picked_text)
+                    delay_days = int(match.group(1))
             
             # 약속 등록
             promise_id = add_promise(npc, picked_text, delay_days)

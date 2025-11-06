@@ -16,6 +16,7 @@ default mc_name = "하진"
 
 default day = 1
 default days_left = 30
+default start_day_of_week = 0  # 0=월요일, 1=화요일, ..., 6=일요일
 
 default stress  = 35
 default resolve = 45
@@ -41,6 +42,52 @@ default promise_id_counter = 0  # 약속 ID 카운터
 
 # 지연 이벤트 관리 함수들
 init python:
+    # 요일 관련 함수들
+    WEEKDAY_NAMES = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"]
+    WEEKDAY_SHORT = ["월", "화", "수", "목", "금", "토", "일"]
+    
+    def get_current_weekday():
+        """현재 게임 날짜의 요일을 반환 (0=월요일, 6=일요일)"""
+        return (start_day_of_week + (day - 1)) % 7
+    
+    def get_weekday_name(weekday_num=None):
+        """요일 번호를 한글 이름으로 변환"""
+        if weekday_num is None:
+            weekday_num = get_current_weekday()
+        return WEEKDAY_NAMES[weekday_num]
+    
+    def parse_weekday(text):
+        """텍스트에서 요일을 파싱 (예: "월요일" -> 0, "토요일" -> 5, "주말" -> 5)"""
+        for i, name in enumerate(WEEKDAY_NAMES):
+            if name in text:
+                return i
+        for i, short in enumerate(WEEKDAY_SHORT):
+            if short + "요일" in text:
+                return i
+        # "주말" = 토요일 (5)
+        if "주말" in text:
+            return 5
+        # "평일" = 월요일 (0)으로 기본값
+        if "평일" in text:
+            return 0
+        return None
+    
+    def calculate_days_until_weekday(target_weekday):
+        """현재 요일에서 목표 요일까지의 일수 계산"""
+        current_weekday = get_current_weekday()
+        
+        if target_weekday >= current_weekday:
+            # 같은 주 내에서
+            days_until = target_weekday - current_weekday
+        else:
+            # 다음 주
+            days_until = 7 - current_weekday + target_weekday
+        
+        # 0일이면 최소 1일 (오늘이 아니라 다음 해당 요일)
+        if days_until == 0:
+            days_until = 7
+        
+        return days_until
     def schedule_event(event_type, delay_days, **kwargs):
         """지연 이벤트를 스케줄에 추가"""
         target_day = day + delay_days

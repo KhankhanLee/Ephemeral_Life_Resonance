@@ -1,32 +1,32 @@
-2025-11-06 02:35:07 UTC
+2025-11-06 05:03:00 UTC
 macOS-10.16-x86_64-i386-64bit
 Ren'Py 8.4.1.25072401
 
-Early init took 53 ms
-Loading error handling took 25 ms
-Loading script took 218 ms
-Loading save slot metadata took 30 ms
+Early init took 54 ms
+Loading error handling took 26 ms
+Loading script took 402 ms
+Loading save slot metadata took 34 ms
 Loading persistent took 0 ms
 Running init code took 48 ms
-Loading analysis data took 6 ms
-Analyze and compile ATL took 2 ms
+Loading analysis data took 3 ms
+Analyze and compile ATL took 1 ms
 Reloading save slot metadata took 12 ms
 Backing up script files to '/Users/nankhan/Library/RenPy/backups/Ephemeral_Life_Resonance':
-Dump and make backups took 36 ms
+Dump and make backups took 37 ms
 Cleaning cache took 0 ms
 Making clean stores took 0 ms
-Initial gc took 31 ms
+Initial gc took 34 ms
 DPI scale factor: 1.000000
 Creating interface object took 0 ms
 Init translation took 0 ms
 Cleaning stores took 0 ms
 Load screen analysis took 1 ms
 Analyze screens took 13 ms
-Save screen analysis took 12 ms
-Save pyanalysis took 7 ms
-Save bytecode took 25 ms
+Save screen analysis took 10 ms
+Save pyanalysis took 0 ms
+Save bytecode took 21 ms
 Running _start took 1 ms
-Interface start took 1376 ms
+Interface start took 755 ms
 
 Initializing gl2 renderer:
 primary display bounds: (0, 0, 1680, 1050)
@@ -46,21 +46,28 @@ Maximum texture size: 4096x4096
 Day 1 이벤트 체크 시작...
 전체 스케줄: {}
 Day 1에 예정된 이벤트 없음
-플레이어가 약속 선택: 좋아, 오늘 저녁 7시에 다큐 같이 보자!
-약속 추가: hayeon - 좋아, 오늘 저녁 7시에 다큐 같이 보자! (Day 2)
-약속 등록: hayeon - 좋아, 오늘 저녁 7시에 다큐 같이 보자! (Day 2)
+🎵 공간 변경: cafe - peaceful 음악 재생
+플레이어가 약속 선택: 블랙홀 다큐멘터리라니, 완전 끌린다! 좋아, 주말에 보자!
+약속 추가: hayeon - 블랙홀 다큐멘터리라니, 완전 끌린다! 좋아, 주말에 보자! (Day 2)
+약속 등록: hayeon - 블랙홀 다큐멘터리라니, 완전 끌린다! 좋아, 주말에 보자! (Day 2)
 이벤트 스케줄 추가:
-   - 타입: promise_hayeon_promise_1_slot_night
+   - 타입: promise_hayeon_promise_1
    - 목표일: Day 2 (0일 후)
-   - 데이터: {'npc': 'hayeon', 'character': 'hayeon', 'content': '좋아, 오늘 저녁 7시에 다큐 같이 보자!', 'time_slot': 'night'}
+   - 데이터: {'npc': 'hayeon', 'character': 'hayeon', 'content': '블랙홀 다큐멘터리라니, 완전 끌린다! 좋아, 주말에 보자!'}
    - 현재 Day 2 스케줄: 1개 이벤트
-시간대 이벤트 스케줄: promise_hayeon_promise_1_slot_night - night
-플레이어가 약속 선택: 좋아, 5시에 보자! 무슨 옷 입고 갈까?
-약속 추가: hayeon - 좋아, 5시에 보자! 무슨 옷 입고 갈까? (Day 2)
-약속 등록: hayeon - 좋아, 5시에 보자! 무슨 옷 입고 갈까? (Day 2)
+이벤트 스케줄: promise_hayeon_promise_1 - 0일 후
+플레이어가 약속 선택: 글쎄, 하연이가 좋아하는 걸로 하자!
+약속 추가: hayeon - 글쎄, 하연이가 좋아하는 걸로 하자! (Day 2)
+약속 등록: hayeon - 글쎄, 하연이가 좋아하는 걸로 하자! (Day 2)
 이벤트 스케줄 추가:
    - 타입: promise_hayeon_promise_2
    - 목표일: Day 2 (0일 후)
-   - 데이터: {'npc': 'hayeon', 'character': 'hayeon', 'content': '좋아, 5시에 보자! 무슨 옷 입고 갈까?'}
+   - 데이터: {'npc': 'hayeon', 'character': 'hayeon', 'content': '글쎄, 하연이가 좋아하는 걸로 하자!'}
    - 현재 Day 2 스케줄: 2개 이벤트
 이벤트 스케줄: promise_hayeon_promise_2 - 0일 후
+Day 2 이벤트 체크 시작...
+전체 스케줄: {2: [{'type': 'promise_hayeon_promise_1', 'kwargs': {'npc': 'hayeon', 'character': 'hayeon', 'content': '블랙홀 다큐멘터리라니, 완전 끌린다! 좋아, 주말에 보자!'}}, {'type': 'promise_hayeon_promise_2', 'kwargs': {'npc': 'hayeon', 'character': 'hayeon', 'content': '글쎄, 하연이가 좋아하는 걸로 하자!'}}]}
+Day 2에 2개 이벤트 발견!
+이벤트 실행: promise_hayeon_promise_1
+약속 이벤트 실행: hayeon - 블랙홀 다큐멘터리라니, 완전 끌린다! 좋아, 주말에 보자!
+약속 이벤트 실행: hayeon - 블랙홀 다큐멘터리라니, 완전 끌린다! 좋아, 주말에 보자!
